@@ -19,6 +19,13 @@ function doGet() {
   return json_({ ok: true, service: 'Neuro Shakti Plus order endpoint' });
 }
 
+// Run setup() once from the Apps Script editor to authorize Sheet access and create the tab.
+function setup() {
+  const id = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
+  if (!id) throw new Error('Add SPREADSHEET_ID in Script Properties first.');
+  getOrdersSheet_(id);
+}
+
 function doPost(e) {
   const lock = LockService.getScriptLock();
   try {
@@ -50,10 +57,10 @@ function doPost(e) {
 
     lock.waitLock(10000);
     try {
-      const props = PropertiesService.getScriptProperties();
-      const now = Math.floor(Date.now() / 1000);
+      const cache = CacheService.getScriptCache();
       const phoneKey = 'last_' + order.mobileNumber;
-      const lastAt = Number(props.getProperty(phoneKey) || 0);
+      const lastAt = Number(cache.get(phoneKey) || 0);
+      const now = Math.floor(Date.now() / 1000);
       if (now - lastAt < CONFIG.PHONE_COOLDOWN_SECONDS) {
         return json_({ ok: false, error: 'Please wait before submitting again' });
       }
@@ -65,7 +72,7 @@ function doPost(e) {
           order.mobileNumber + '|' + order.address + '|' + order.city + '|' + order.pincode)
       ).slice(0, 32);
       const duplicateKey = 'order_' + fingerprint;
-      const duplicateAt = Number(props.getProperty(duplicateKey) || 0);
+      const duplicateAt = Number(cache.get(duplicateKey) || 0);
       if (now - duplicateAt < CONFIG.DUPLICATE_WINDOW_SECONDS) {
         return json_({ ok: false, error: 'Duplicate order detected' });
       }
@@ -81,8 +88,8 @@ function doPost(e) {
         'COD',
         'New'
       ]);
-      props.setProperty(phoneKey, String(now));
-      props.setProperty(duplicateKey, String(now));
+      cache.put(phoneKey, String(now), CONFIG.PHONE_COOLDOWN_SECONDS);
+      cache.put(duplicateKey, String(now), CONFIG.DUPLICATE_WINDOW_SECONDS);
       return json_({ ok: true });
     } finally {
       lock.releaseLock();
