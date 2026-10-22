@@ -9,6 +9,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Cloudflare Turnstile: bot verification is also verified server-side. -->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad&render=explicit" async defer></script>
     <script>
         tailwind.config = {
             theme: {
@@ -100,35 +102,7 @@
     <!-- Mobile Screen Frame Container -->
     <div class="mobile-frame pb-16">
 
-        <!-- ========================================== -->
-        <!-- GOOGLE SHEETS SETUP CONFIGURATION BAR      -->
-        <!-- ========================================== -->
-        <div class="bg-slate-900 text-slate-200 text-xs p-2.5 border-b border-slate-700">
-            <details class="group">
-                <summary class="cursor-pointer font-semibold flex items-center justify-between text-amber-400">
-                    <span class="flex items-center gap-1.5">
-                        <i data-lucide="settings" class="w-4 h-4"></i>
-                        <span>⚙️ Google Sheet Configuration Settings</span>
-                    </span>
-                    <span class="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded text-slate-300">Tap to edit</span>
-                </summary>
-                <div class="mt-2.5 space-y-2 pt-2 border-t border-slate-800 text-[11px]">
-                    <p class="text-slate-300 leading-tight">
-                        अपनी Google Sheet का Web App Script URL नीचे डालें। ऑर्डर फॉर्म डायरेक्ट इसी शीट में डेटा सेव करेगा और थैंक यू पेज दिखाएगा:
-                    </p>
-                    <div>
-                        <label class="block font-bold text-amber-300 mb-1">Google Apps Script Web App URL:</label>
-                        <input type="url" id="sheetUrlInput" 
-                               placeholder="https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec" 
-                               class="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1.5 text-xs text-white outline-none focus:border-amber-400">
-                    </div>
-                    <button onclick="saveSheetUrl()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-3 py-1 rounded text-xs">
-                        Save Webhook URL
-                    </button>
-                    <span id="saveStatus" class="text-emerald-400 font-bold text-[10px] ml-2"></span>
-                </div>
-            </details>
-        </div>
+        <!-- Order endpoint is configured in the site code; no public settings UI. -->
 
         <!-- ========================================== -->
         <!-- 1. HEADER & HERO SECTION                   -->
@@ -568,6 +542,16 @@
                         </div>
                     </div>
 
+                    <!-- Honeypot: real customers should never fill this field. -->
+                    <div aria-hidden="true" class="absolute -left-[10000px] top-auto w-px h-px overflow-hidden">
+                        <label for="website">Website</label>
+                        <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+                    </div>
+
+                    <!-- Cloudflare Turnstile managed bot check -->
+                    <div id="turnstileWidget" class="flex justify-center py-1"></div>
+                    <p id="formStatus" role="status" aria-live="polite" class="text-xs text-center text-slate-600"></p>
+
                     <!-- Submit Button -->
                     <button type="submit" id="submitBtn" class="pulse-gold w-full bg-gradient-to-r from-gold to-amber-600 hover:from-gold-dark hover:to-amber-700 text-white font-bold text-sm py-3 px-4 rounded-xl shadow-lg transition-all border border-amber-300/40 mt-2 flex items-center justify-center gap-2">
                         <i data-lucide="shopping-cart" class="w-4 h-4"></i>
@@ -590,12 +574,12 @@
                 </div>
 
                 <div class="space-y-1">
-                    <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
-                        Request Confirmed ✅
+                    <span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                        Request Sent for Processing
                     </span>
-                    <h3 class="text-lg font-bold text-slate-900">धन्यवाद! आपका ऑर्डर प्राप्त हो गया है</h3>
+                    <h3 class="text-lg font-bold text-slate-900">धन्यवाद! आपकी रिक्वेस्ट भेज दी गई है</h3>
                     <p class="text-xs text-slate-600">
-                        हमारी एक्सपर्ट टीम जल्द ही आपसे दिए गए नंबर पर संपर्क करेगी और आपकी पूरी सहायता करेगी।
+                        आपकी जानकारी प्रोसेसिंग के लिए भेजी गई है। हमारी टीम संपर्क करके ऑर्डर की पुष्टि करेगी।
                     </p>
                 </div>
 
@@ -659,22 +643,31 @@
         // Initialize Lucide Icons
         lucide.createIcons();
 
-        // Default Google Apps Script Web App URL Key in LocalStorage
-        let googleSheetUrl = localStorage.getItem('neuro_shakti_sheet_url') || '';
+        // Public configuration only. These values are not secrets.
+        const TURNSTILE_SITE_KEY = 'PASTE_CLOUDFLARE_SITE_KEY_HERE';
+        const ORDER_ENDPOINT_URL = 'PASTE_APPS_SCRIPT_EXEC_URL_HERE';
+        let turnstileToken = '';
+        let turnstileWidgetId = null;
+        const formStartedAt = Date.now();
 
-        window.onload = function() {
-            if (googleSheetUrl) {
-                document.getElementById('sheetUrlInput').value = googleSheetUrl;
+        function onTurnstileLoad() {
+            const target = document.getElementById('turnstileWidget');
+            if (!target || !window.turnstile) return;
+            if (TURNSTILE_SITE_KEY === 'PASTE_CLOUDFLARE_SITE_KEY_HERE') {
+                document.getElementById('formStatus').textContent = 'ऑर्डर फॉर्म सेटअप पूरा होने के बाद उपलब्ध होगा।';
+                document.getElementById('submitBtn').disabled = true;
+                return;
             }
-        };
-
-        function saveSheetUrl() {
-            const inputVal = document.getElementById('sheetUrlInput').value.trim();
-            googleSheetUrl = inputVal;
-            localStorage.setItem('neuro_shakti_sheet_url', inputVal);
-            const status = document.getElementById('saveStatus');
-            status.innerText = "✓ Saved Successfully!";
-            setTimeout(() => status.innerText = "", 3000);
+            turnstileWidgetId = window.turnstile.render(target, {
+                sitekey: TURNSTILE_SITE_KEY,
+                callback: function(token) { turnstileToken = token; },
+                'expired-callback': function() { turnstileToken = ''; },
+                'error-callback': function() {
+                    turnstileToken = '';
+                    document.getElementById('formStatus').textContent = 'Bot verification लोड नहीं हुआ। कृपया पेज refresh करें।';
+                },
+                theme: 'light'
+            });
         }
 
         // Toggle Selected State on Problem Cards
@@ -682,9 +675,20 @@
             cardEl.classList.toggle('selected');
         }
 
-        // Form Submit Handler (Sends Data to Google Sheets & Displays Thank You Screen)
-        function handleFormSubmit(e) {
+        async function handleFormSubmit(e) {
             e.preventDefault();
+            const status = document.getElementById('formStatus');
+            const submitBtn = document.getElementById('submitBtn');
+            if (document.getElementById('website').value.trim()) return;
+            if (!ORDER_ENDPOINT_URL.startsWith('https://script.google.com/macros/s/') ||
+                !ORDER_ENDPOINT_URL.endsWith('/exec')) {
+                status.textContent = 'ऑर्डर फॉर्म अभी कॉन्फ़िगर नहीं है। कृपया बाद में प्रयास करें।';
+                return;
+            }
+            if (!turnstileToken) {
+                status.textContent = 'कृपया bot verification पूरा करें।';
+                return;
+            }
 
             const name = document.getElementById('fullName').value.trim();
             const phone = document.getElementById('mobileNumber').value.trim();
@@ -692,44 +696,61 @@
             const city = document.getElementById('cityName').value.trim();
             const pincode = document.getElementById('pincode').value.trim();
 
-            // Collect Selected Problems
+            if (!/^[6-9][0-9]{9}$/.test(phone)) {
+                status.textContent = 'कृपया सही 10 अंकों का भारतीय मोबाइल नंबर लिखें।';
+                return;
+            }
+            if (pincode && !/^[0-9]{6}$/.test(pincode)) {
+                status.textContent = 'कृपया सही 6 अंकों का पिनकोड लिखें।';
+                return;
+            }
+
             const selectedProblems = [];
             document.querySelectorAll('.problem-card.selected').forEach((card) => {
-                selectedProblems.push(card.querySelector('p').innerText);
+                const label = card.querySelector('p');
+                if (label) selectedProblems.push(label.innerText.trim());
             });
 
-            const submitBtn = document.getElementById('submitBtn');
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span>प्रोसेसिंग हो रही है...</span>';
+            status.textContent = 'आपकी रिक्वेस्ट भेजी जा रही है…';
 
             const payload = {
-                timestamp: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
                 fullName: name,
                 mobileNumber: phone,
                 address: address,
                 city: city,
                 pincode: pincode,
-                selectedProblems: selectedProblems.join(' | ') || 'None Selected'
+                selectedProblems: selectedProblems.join(' | '),
+                elapsedSeconds: Math.floor((Date.now() - formStartedAt) / 1000)
             };
 
-            // Post Data to Google Sheet Script if URL provided
-            if (googleSheetUrl) {
-                fetch(googleSheetUrl, {
+            try {
+                // URLSearchParams creates a simple form-encoded POST, avoiding a CORS preflight.
+                // Apps Script ContentService does not provide a dependable browser-readable CORS response;
+                // therefore we never claim that the Sheet write is confirmed here.
+                const body = new URLSearchParams({
+                    payload: JSON.stringify(payload),
+                    turnstileToken: turnstileToken,
+                    website: document.getElementById('website').value
+                });
+                await fetch(ORDER_ENDPOINT_URL, {
                     method: 'POST',
                     mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                }).then(() => {
-                    showThankYouScreen(name, phone);
-                }).catch((err) => {
-                    console.error('Error sending to sheet:', err);
-                    showThankYouScreen(name, phone);
+                    body: body
                 });
-            } else {
-                // If no Web App URL set, display thank you screen directly
-                setTimeout(() => {
-                    showThankYouScreen(name, phone);
-                }, 600);
+                showThankYouScreen(name, phone);
+                status.textContent = '';
+            } catch (err) {
+                console.error('Order submission could not be sent:', err);
+                status.textContent = 'रिक्वेस्ट भेजने में समस्या हुई। कृपया दोबारा प्रयास करें या हमारी टीम से संपर्क करें।';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i data-lucide="shopping-cart" class="w-4 h-4"></i><span>Order Request भेजें</span>';
+                if (window.turnstile && turnstileWidgetId !== null) {
+                    window.turnstile.reset(turnstileWidgetId);
+                    turnstileToken = '';
+                }
+                lucide.createIcons();
             }
         }
 
@@ -745,6 +766,9 @@
 
         function resetOrderForm() {
             document.getElementById('leadCaptureForm').reset();
+            document.getElementById('formStatus').textContent = '';
+            turnstileToken = '';
+            if (window.turnstile && turnstileWidgetId !== null) window.turnstile.reset(turnstileWidgetId);
             document.getElementById('submitBtn').disabled = false;
             document.getElementById('submitBtn').innerHTML = '<i data-lucide="shopping-cart" class="w-4 h-4"></i><span>Order Request भेजें</span>';
             document.getElementById('thankYouContainer').classList.add('hidden');
