@@ -1,0 +1,10 @@
+// Submit Form Function
+const formData = {
+    timestamp: new Date().toLocaleString(),
+    productName: "नया प्रोडक्ट नाम", // <-- यहाँ नया प्रोडक्ट नाम लिखें
+    fullName: document.getElementById('fullName').value,
+    mobileNumber: document.getElementById('mobileNumber').value,
+    address: document.getElementById('address').value,
+    city: document.getElementById('city').value,
+    pincode: document.getElementById('pincode').value
+};
