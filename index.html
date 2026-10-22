@@ -9,8 +9,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Cloudflare Turnstile: bot verification is also verified server-side. -->
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad&render=explicit" async defer></script>
     <script>
         tailwind.config = {
             theme: {
@@ -548,8 +546,6 @@
                         <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
                     </div>
 
-                    <!-- Cloudflare Turnstile managed bot check -->
-                    <div id="turnstileWidget" class="flex justify-center py-1"></div>
                     <p id="formStatus" role="status" aria-live="polite" class="text-xs text-center text-slate-600"></p>
 
                     <!-- Submit Button -->
@@ -644,31 +640,8 @@
         lucide.createIcons();
 
         // Public configuration only. These values are not secrets.
-        const TURNSTILE_SITE_KEY = 'PASTE_CLOUDFLARE_SITE_KEY_HERE';
         const ORDER_ENDPOINT_URL = 'https://script.google.com/macros/s/AKfycbxm2l3f7JvrsCRwmKobdgTFAJEZXpgwLbXrUqPAG5eWAY-2l57LSjkTusTvRqc4RjXB/exec';
-        let turnstileToken = '';
-        let turnstileWidgetId = null;
         const formStartedAt = Date.now();
-
-        function onTurnstileLoad() {
-            const target = document.getElementById('turnstileWidget');
-            if (!target || !window.turnstile) return;
-            if (TURNSTILE_SITE_KEY === 'PASTE_CLOUDFLARE_SITE_KEY_HERE') {
-                document.getElementById('formStatus').textContent = 'ऑर्डर फॉर्म सेटअप पूरा होने के बाद उपलब्ध होगा।';
-                document.getElementById('submitBtn').disabled = true;
-                return;
-            }
-            turnstileWidgetId = window.turnstile.render(target, {
-                sitekey: TURNSTILE_SITE_KEY,
-                callback: function(token) { turnstileToken = token; },
-                'expired-callback': function() { turnstileToken = ''; },
-                'error-callback': function() {
-                    turnstileToken = '';
-                    document.getElementById('formStatus').textContent = 'Bot verification लोड नहीं हुआ। कृपया पेज refresh करें।';
-                },
-                theme: 'light'
-            });
-        }
 
         // Toggle Selected State on Problem Cards
         function toggleProblemCard(cardEl) {
@@ -685,11 +658,6 @@
                 status.textContent = 'ऑर्डर फॉर्म अभी कॉन्फ़िगर नहीं है। कृपया बाद में प्रयास करें।';
                 return;
             }
-            if (!turnstileToken) {
-                status.textContent = 'कृपया bot verification पूरा करें।';
-                return;
-            }
-
             const name = document.getElementById('fullName').value.trim();
             const phone = document.getElementById('mobileNumber').value.trim();
             const address = document.getElementById('deliveryAddress').value.trim();
@@ -731,7 +699,6 @@
                 // therefore we never claim that the Sheet write is confirmed here.
                 const body = new URLSearchParams({
                     payload: JSON.stringify(payload),
-                    turnstileToken: turnstileToken,
                     website: document.getElementById('website').value
                 });
                 await fetch(ORDER_ENDPOINT_URL, {
@@ -746,10 +713,6 @@
                 status.textContent = 'रिक्वेस्ट भेजने में समस्या हुई। कृपया दोबारा प्रयास करें या हमारी टीम से संपर्क करें।';
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i data-lucide="shopping-cart" class="w-4 h-4"></i><span>Order Request भेजें</span>';
-                if (window.turnstile && turnstileWidgetId !== null) {
-                    window.turnstile.reset(turnstileWidgetId);
-                    turnstileToken = '';
-                }
                 lucide.createIcons();
             }
         }
@@ -767,8 +730,6 @@
         function resetOrderForm() {
             document.getElementById('leadCaptureForm').reset();
             document.getElementById('formStatus').textContent = '';
-            turnstileToken = '';
-            if (window.turnstile && turnstileWidgetId !== null) window.turnstile.reset(turnstileWidgetId);
             document.getElementById('submitBtn').disabled = false;
             document.getElementById('submitBtn').innerHTML = '<i data-lucide="shopping-cart" class="w-4 h-4"></i><span>Order Request भेजें</span>';
             document.getElementById('thankYouContainer').classList.add('hidden');
