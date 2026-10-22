@@ -4,8 +4,7 @@
  *
  * Required Script Properties (Project Settings > Script properties):
  * SPREADSHEET_ID = ID of the destination Google Sheet
- * TURNSTILE_SECRET = Cloudflare Turnstile secret key
- * ALLOWED_HOSTNAME = exact public hostname, e.g. adyguru4455-max.github.io
+ * SPREADSHEET_ID = ID of the destination Google Sheet
  */
 const CONFIG = {
   SHEET_NAME: 'Orders',
@@ -37,19 +36,10 @@ function doPost(e) {
     }
 
     const data = JSON.parse(e.parameter.payload);
-    const turnstileToken = String(e.parameter.turnstileToken || '');
-    const secret = PropertiesService.getScriptProperties().getProperty('TURNSTILE_SECRET');
     const spreadsheetId = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
-    const allowedHostname = PropertiesService.getScriptProperties().getProperty('ALLOWED_HOSTNAME');
-
-    if (!secret || !spreadsheetId || !allowedHostname) {
-      console.error('Missing SPREADSHEET_ID or TURNSTILE_SECRET script property.');
+    if (!spreadsheetId) {
+      console.error('Missing SPREADSHEET_ID script property.');
       return json_({ ok: false, error: 'Server is not configured' });
-    }
-
-    // Bot challenge is verified server-side; never trust the browser alone.
-    if (!turnstileToken || !verifyTurnstile_(turnstileToken, secret, allowedHostname)) {
-      return json_({ ok: false, error: 'Bot verification failed' });
     }
 
     const order = validateOrder_(data);
@@ -129,18 +119,6 @@ function safeCell_(value) {
   // Prevent spreadsheet formula injection in user-controlled fields.
   const s = cleanText_(value, CONFIG.MAX_TEXT);
   return /^[=+@\-]/.test(s) ? "'" + s : s;
-}
-
-function verifyTurnstile_(token, secret, allowedHostname) {
-  const response = UrlFetchApp.fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-    method: 'post',
-    payload: { secret: secret, response: token },
-    muteHttpExceptions: true
-  });
-  if (response.getResponseCode() !== 200) return false;
-  const result = JSON.parse(response.getContentText() || '{}');
-  const allowed = String(allowedHostname || '').split(',').map(function(x) { return x.trim().toLowerCase(); });
-  return result.success === true && allowed.indexOf(String(result.hostname || '').toLowerCase()) !== -1;
 }
 
 function getOrdersSheet_(spreadsheetId) {
