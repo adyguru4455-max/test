@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ऑर्डर कन्फर्म हुआ - Neuro Shakti Plus</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Hind', sans-serif;
+            background-color: #f3f7f4;
+        }
+        .checkmark-circle {
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+        @keyframes stroke {
+            100% {
+                transform: scale(1.05);
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <!-- Main Container -->
+    <div class="max-w-md w-full bg-white rounded-3xl shadow-xl overflow-hidden border border-emerald-100">
+        
+        <!-- Header Banner -->
+        <div class="bg-gradient-to-r from-emerald-800 to-green-700 p-6 text-center text-white relative">
+            <!-- Animated Checkmark Icon -->
+            <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3 backdrop-blur-sm checkmark-circle">
+                <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-emerald-700 text-3xl shadow-lg">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+            </div>
+            <h1 class="text-2xl font-bold">धन्यवाद! (Thank You)</h1>
+            <p class="text-emerald-100 text-sm mt-1">आपका ऑर्डर सफलतापूर्वक प्राप्त हो गया है।</p>
+        </div>
+
+        <!-- Content Body -->
+        <div class="p-6 space-y-5 text-gray-800">
+
+            <!-- Order Status Card -->
+            <div class="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-4 text-center">
+                <p class="text-xs text-emerald-800 font-semibold uppercase tracking-wider mb-1">ऑर्डर स्टेटस</p>
+                <div class="text-emerald-900 font-bold text-lg flex items-center justify-center gap-2">
+                    <span class="relative flex h-3 w-3">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-600"></span>
+                    </span>
+                    ऑर्डर कन्फर्मेशन प्रक्रिया में है
+                </div>
+                <p class="text-xs text-gray-600 mt-2">हमारी टीम जल्द ही आपसे फ़ोन पर संपर्क करके डिलीवरी की पुष्टि करेगी।</p>
+            </div>
+
+            <!-- Delivery Details Highlights -->
+            <div class="space-y-3">
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
+                    <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-truck-fast"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 font-medium">अनुमानित डिलीवरी समय</p>
+                        <p class="text-sm font-bold text-gray-800">3 से 5 कार्य दिवस (Working Days)</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
+                    <div class="w-10 h-10 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-hand-holding-dollar"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 font-medium">भुगतान का तरीका</p>
+                        <p class="text-sm font-bold text-gray-800">कैश ऑन डिलीवरी (COD Available)</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-800 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-utensils"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 font-medium">मुफ़्त ऑफ़र शामिल</p>
+                        <p class="text-sm font-bold text-gray-800">Free Expert Diet Chart</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons / Customer Support -->
+            <div class="pt-2 space-y-2">
+                <p class="text-xs text-center text-gray-500 font-medium">क्या आपको कोई सवाल पूछना है?</p>
+                
+                <!-- Call Support Button -->
+                <a href="tel:+919876543210" class="w-full flex items-center justify-center gap-2 bg-emerald-800 hover:bg-emerald-900 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-all text-sm">
+                    <i class="fa-solid fa-phone"></i> ग्राहक सहायता से बात करें
+                </a>
+
+                <!-- Home Button -->
+                <a href="index.html" class="w-full flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2.5 px-4 rounded-xl transition-all text-sm">
+                    <i class="fa-solid fa-house"></i> होमपेज पर वापस जाएँ
+                </a>
+            </div>
+
+        </div>
+
+        <!-- Footer Notice -->
+        <div class="bg-gray-50 p-4 border-t border-gray-100 text-center text-xs text-gray-400">
+            © 2026 Neuro Shakti Plus. All rights reserved.
+        </div>
+
+    </div>
+
+</body>
+</html>
