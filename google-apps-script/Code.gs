@@ -5,6 +5,7 @@
  * Required Script Properties (Project Settings > Script properties):
  * SPREADSHEET_ID = ID of the destination Google Sheet
  * TURNSTILE_SECRET = Cloudflare Turnstile secret key
+ * ALLOWED_HOSTNAME = exact public hostname, e.g. adyguru4455-max.github.io
  */
 const CONFIG = {
   SHEET_NAME: 'Orders',
@@ -24,19 +25,23 @@ function doPost(e) {
     if (!e || !e.parameter || !e.parameter.payload) {
       return json_({ ok: false, error: 'Missing order payload' });
     }
+    if (String(e.parameter.website || '').trim()) {
+      return json_({ ok: false, error: 'Rejected' });
+    }
 
     const data = JSON.parse(e.parameter.payload);
     const turnstileToken = String(e.parameter.turnstileToken || '');
     const secret = PropertiesService.getScriptProperties().getProperty('TURNSTILE_SECRET');
     const spreadsheetId = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
+    const allowedHostname = PropertiesService.getScriptProperties().getProperty('ALLOWED_HOSTNAME');
 
-    if (!secret || !spreadsheetId) {
+    if (!secret || !spreadsheetId || !allowedHostname) {
       console.error('Missing SPREADSHEET_ID or TURNSTILE_SECRET script property.');
       return json_({ ok: false, error: 'Server is not configured' });
     }
 
     // Bot challenge is verified server-side; never trust the browser alone.
-    if (!turnstileToken || !verifyTurnstile_(turnstileToken, secret)) {
+    if (!turnstileToken || !verifyTurnstile_(turnstileToken, secret, allowedHostname)) {
       return json_({ ok: false, error: 'Bot verification failed' });
     }
 
@@ -119,7 +124,7 @@ function safeCell_(value) {
   return /^[=+@\-]/.test(s) ? "'" + s : s;
 }
 
-function verifyTurnstile_(token, secret) {
+function verifyTurnstile_(token, secret, allowedHostname) {
   const response = UrlFetchApp.fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
     method: 'post',
     payload: { secret: secret, response: token },
@@ -127,7 +132,8 @@ function verifyTurnstile_(token, secret) {
   });
   if (response.getResponseCode() !== 200) return false;
   const result = JSON.parse(response.getContentText() || '{}');
-  return result.success === true;
+  const allowed = String(allowedHostname || '').split(',').map(function(x) { return x.trim().toLowerCase(); });
+  return result.success === true && allowed.indexOf(String(result.hostname || '').toLowerCase()) !== -1;
 }
 
 function getOrdersSheet_(spreadsheetId) {
