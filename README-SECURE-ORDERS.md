@@ -39,10 +39,14 @@ Search for these constants in the JavaScript section and replace their placehold
 
 These are intentionally public configuration values; **never paste the Turnstile secret into HTML or GitHub**.
 
-## 5. Publish the website
-1. Commit/merge the changes to your website branch. If using GitHub Pages, enable it in **Settings → Pages** and select the intended branch/folder.
-2. Add the deployed domain to the Turnstile widget's allowed hostnames.
-3. Ensure the hostname configured in Apps Script `ALLOWED_HOSTNAME` matches the hostname that Turnstile returns exactly.
+## 5. Automatic deployment with GitHub Pages
+1. Merge this pull request into `main` after resolving any merge conflicts.
+2. The workflow `.github/workflows/deploy-pages.yml` automatically deploys the repository root whenever a commit is pushed to `main`. You can also run it manually from **Actions → Deploy landing page to GitHub Pages → Run workflow**.
+3. On the first deployment, GitHub Actions configures Pages. If repository policy prevents automatic enablement, open **Settings → Pages** and set the build/deployment source to **GitHub Actions**.
+4. Add the deployed domain to the Turnstile widget's allowed hostnames.
+5. Ensure the hostname configured in Apps Script `ALLOWED_HOSTNAME` matches the hostname that Turnstile returns exactly.
+
+This workflow is committed to the feature branch and will not deploy the changes until the pull request is merged into `main` (or the workflow is separately configured to deploy from another branch).
 
 ## 6. Test before advertising
 1. Open the live site in a private/incognito window.
