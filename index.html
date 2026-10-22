@@ -1,0 +1,756 @@
+<head>
+<!DOCTYPE html>
+<html lang="hi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Neuro Shakti Plus - Ayurvedic Wellness Support</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        forest: {
+                            DEFAULT: '#1d3d28',
+                            dark: '#132b1b',
+                            light: '#285237',
+                            soft: '#366848'
+                        },
+                        sage: {
+                            50: '#f7faf7',
+                            100: '#e8f0e8',
+                            200: '#d0e1d0',
+                            300: '#adcbaa',
+                            400: '#83ad80'
+                        },
+                        cream: {
+                            DEFAULT: '#fbf9f4',
+                            card: '#f4f0e6',
+                            border: '#e6ded0'
+                        },
+                        gold: {
+                            DEFAULT: '#d97706',
+                            light: '#fbbf24',
+                            dark: '#b45309'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Hind', 'Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Hind', sans-serif;
+            background-color: #121814;
+            color: #1e293b;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .mobile-frame {
+            max-width: 480px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            min-height: 100vh;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .pulse-gold {
+            box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.6);
+            animation: pulse-gold-anim 2s infinite;
+        }
+
+        @keyframes pulse-gold-anim {
+            0% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.6); }
+            70% { box-shadow: 0 0 0 12px rgba(217, 119, 6, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0); }
+        }
+
+        /* Custom Checkbox Glow for Problems Section */
+        .problem-card.selected {
+            border-color: #1d3d28 !important;
+            background-color: #e8f0e8 !important;
+            box-shadow: 0 4px 12px rgba(29, 61, 40, 0.12);
+        }
+        .problem-card.selected .check-indicator {
+            background-color: #1d3d28 !important;
+            color: #ffffff !important;
+            border-color: #1d3d28 !important;
+        }
+
+        /* Glassmorphism Badge */
+        .glass-badge {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(6px);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Mobile Screen Frame Container -->
+    <div class="mobile-frame pb-16">
+
+        <!-- ========================================== -->
+        <!-- GOOGLE SHEETS SETUP CONFIGURATION BAR      -->
+        <!-- ========================================== -->
+        <div class="bg-slate-900 text-slate-200 text-xs p-2.5 border-b border-slate-700">
+            <details class="group">
+                <summary class="cursor-pointer font-semibold flex items-center justify-between text-amber-400">
+                    <span class="flex items-center gap-1.5">
+                        <i data-lucide="settings" class="w-4 h-4"></i>
+                        <span>⚙️ Google Sheet Configuration Settings</span>
+                    </span>
+                    <span class="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded text-slate-300">Tap to edit</span>
+                </summary>
+                <div class="mt-2.5 space-y-2 pt-2 border-t border-slate-800 text-[11px]">
+                    <p class="text-slate-300 leading-tight">
+                        अपनी Google Sheet का Web App Script URL नीचे डालें। ऑर्डर फॉर्म डायरेक्ट इसी शीट में डेटा सेव करेगा और थैंक यू पेज दिखाएगा:
+                    </p>
+                    <div>
+                        <label class="block font-bold text-amber-300 mb-1">Google Apps Script Web App URL:</label>
+                        <input type="url" id="sheetUrlInput" 
+                               placeholder="https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec" 
+                               class="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1.5 text-xs text-white outline-none focus:border-amber-400">
+                    </div>
+                    <button onclick="saveSheetUrl()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-3 py-1 rounded text-xs">
+                        Save Webhook URL
+                    </button>
+                    <span id="saveStatus" class="text-emerald-400 font-bold text-[10px] ml-2"></span>
+                </div>
+            </details>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- 1. HEADER & HERO SECTION                   -->
+        <!-- ========================================== -->
+        <header class="bg-forest text-white p-3 sticky top-0 z-40 shadow-md border-b border-forest-soft/40 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-sage-100 flex items-center justify-center text-forest font-bold text-xs shadow-inner">
+                    <i data-lucide="leaf" class="w-4 h-4 text-forest"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-sm leading-none text-white tracking-wide">Neuro Shakti Plus</h1>
+                    <p class="text-[10px] text-sage-200 font-medium">आयुर्वेदिक वेलनेस</p>
+                </div>
+            </div>
+            <a href="#order-form" class="bg-gold hover:bg-gold-dark text-white font-bold text-xs px-3 py-1.5 rounded-full shadow transition flex items-center gap-1">
+                <i data-lucide="shopping-bag" class="w-3.5 h-3.5"></i>
+                <span>ऑर्डर करें</span>
+            </a>
+        </header>
+
+        <!-- Hero Banner Content -->
+        <section class="bg-gradient-to-b from-forest-dark via-forest to-forest-soft text-white px-4 pt-6 pb-8 relative overflow-hidden">
+            <!-- Background Accent Circles -->
+            <div class="absolute -right-10 -top-10 w-40 h-40 bg-emerald-500/10 rounded-full blur-2xl"></div>
+            <div class="absolute -left-10 bottom-0 w-36 h-36 bg-amber-500/10 rounded-full blur-xl"></div>
+
+            <div class="relative z-10 text-center space-y-3">
+                <span class="inline-flex items-center gap-1.5 bg-forest-light/80 border border-sage-300/30 px-3 py-1 rounded-full text-xs text-sage-100 font-medium glass-badge">
+                    <i data-lucide="shield-check" class="w-3.5 h-3.5 text-amber-400"></i>
+                    <span>प्राकृतिक आयुर्वेदिक देख-रेख सपोर्ट</span>
+                </span>
+
+                <!-- Emotional Main Headline -->
+                <h2 class="text-lg sm:text-xl font-bold leading-snug text-white pt-1">
+                    लकवे ने सिर्फ़ शरीर की ताकत ही नहीं छीनी...<br>
+                    <span class="text-amber-300 underline decoration-amber-400/50 underline-offset-4">
+                        बल्कि अपने पैरों पर खड़े होने का आत्मविश्वास भी छीन लिया।
+                    </span>
+                </h2>
+
+                <!-- Hero Image Showcase -->
+                <div class="relative mt-4 mx-auto max-w-[340px] rounded-2xl overflow-hidden shadow-2xl border-2 border-sage-300/30">
+                    <img src="https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=800&q=80" 
+                         alt="Elderly Care & Paralysis Recovery Support" 
+                         class="w-full h-48 object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-forest-dark via-transparent to-transparent"></div>
+                    <div class="absolute bottom-2 left-2 right-2 p-2 bg-forest-dark/80 backdrop-blur-md rounded-xl text-left border border-white/10">
+                        <p class="text-[11px] text-sage-100 font-medium flex items-center gap-1.5">
+                            <i data-lucide="heart-pulse" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i>
+                            <span>सही देखभाल, फिजियोथेरेपी और सही दिनचर्या से रिकवरी आसान बनती है।</span>
+                        </p>
+                    </div>
+                </div>
+
+                <a href="#order-form" class="pulse-gold block w-full bg-gradient-to-r from-gold to-amber-600 text-white font-bold text-base py-3 rounded-xl shadow-lg mt-4 border border-amber-300/40 text-center">
+                    👉 निःशुल्क परामर्श / ऑर्डर के लिए क्लिक करें
+                </a>
+            </div>
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- 2. PERESHANIYA (PROBLEMS TAP CHECKLIST)   -->
+        <!-- ========================================== -->
+        <section class="bg-sage-50 px-4 py-6 border-b border-sage-200">
+            <div class="text-center mb-4">
+                <span class="text-[11px] font-bold text-forest bg-sage-200 px-3 py-0.5 rounded-full uppercase tracking-wider">परेशानियाँ</span>
+                <h3 class="text-base font-bold text-slate-900 mt-1.5">
+                    क्या आपके परिवार का कोई सदस्य इन परेशानियों से जूझ रहा है?
+                </h3>
+                <p class="text-xs text-slate-600 mt-0.5">जो बातें आपके घर पर लागू हों, उन्हें टैप करके चुनें:</p>
+            </div>
+
+            <!-- 6 Interactive Cards Grid -->
+            <div class="space-y-2.5">
+                <!-- Box 1 -->
+                <div onclick="toggleProblemCard(this)" class="problem-card cursor-pointer bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-start gap-3 transition-all">
+                    <div class="check-indicator w-5 h-5 rounded-md border-2 border-slate-300 flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold text-transparent transition-all">
+                        ✓
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs font-bold text-slate-800">1. हाथ या पैर में लगातार Weakness महसूस होना।</p>
+                    </div>
+                    <i data-lucide="activity" class="w-4 h-4 text-forest shrink-0"></i>
+                </div>
+
+                <!-- Box 2 -->
+                <div onclick="toggleProblemCard(this)" class="problem-card cursor-pointer bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-start gap-3 transition-all">
+                    <div class="check-indicator w-5 h-5 rounded-md border-2 border-slate-300 flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold text-transparent transition-all">
+                        ✓
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs font-bold text-slate-800">2. बिना सहारे चलने में परेशानी होना।</p>
+                    </div>
+                    <i data-lucide="footprints" class="w-4 h-4 text-forest shrink-0"></i>
+                </div>
+
+                <!-- Box 3 -->
+                <div onclick="toggleProblemCard(this)" class="problem-card cursor-pointer bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-start gap-3 transition-all">
+                    <div class="check-indicator w-5 h-5 rounded-md border-2 border-slate-300 flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold text-transparent transition-all">
+                        ✓
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs font-bold text-slate-800">3. हाथों की Grip पहले जैसी मज़बूत न रहना।</p>
+                    </div>
+                    <i data-lucide="hand" class="w-4 h-4 text-forest shrink-0"></i>
+                </div>
+
+                <!-- Box 4 -->
+                <div onclick="toggleProblemCard(this)" class="problem-card cursor-pointer bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-start gap-3 transition-all">
+                    <div class="check-indicator w-5 h-5 rounded-md border-2 border-slate-300 flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold text-transparent transition-all">
+                        ✓
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs font-bold text-slate-800">4. शरीर में Stiffness और Movement कम होना।</p>
+                    </div>
+                    <i data-lucide="zap-off" class="w-4 h-4 text-forest shrink-0"></i>
+                </div>
+
+                <!-- Box 5 -->
+                <div onclick="toggleProblemCard(this)" class="problem-card cursor-pointer bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-start gap-3 transition-all">
+                    <div class="check-indicator w-5 h-5 rounded-md border-2 border-slate-300 flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold text-transparent transition-all">
+                        ✓
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs font-bold text-slate-800">5. रोज़मर्रा के छोटे-छोटे काम करने में दिक्कत होना।</p>
+                    </div>
+                    <i data-lucide="coffee" class="w-4 h-4 text-forest shrink-0"></i>
+                </div>
+
+                <!-- Box 6 -->
+                <div onclick="toggleProblemCard(this)" class="problem-card cursor-pointer bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-start gap-3 transition-all">
+                    <div class="check-indicator w-5 h-5 rounded-md border-2 border-slate-300 flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold text-transparent transition-all">
+                        ✓
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs font-bold text-slate-800">6. लंबे समय से Recovery धीमी महसूस होना।</p>
+                    </div>
+                    <i data-lucide="clock" class="w-4 h-4 text-forest shrink-0"></i>
+                </div>
+            </div>
+
+            <!-- Bottom Alert Banner -->
+            <div class="mt-4 bg-forest text-white p-3 rounded-xl text-center border border-forest-light text-xs font-medium shadow">
+                💡 अगर ऐसा है, तो सही <strong>Medical Guidance</strong> के साथ शरीर की <strong>Extra Care</strong> भी ज़रूरी हो सकती है।
+            </div>
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- 3. RECOVERY JOURNEY                       -->
+        <!-- ========================================== -->
+        <section class="bg-white px-4 py-6 border-b border-sage-200 text-center">
+            <span class="text-[11px] font-bold text-forest bg-sage-100 px-3 py-0.5 rounded-full uppercase tracking-wider">Recovery Journey</span>
+            <h3 class="text-base font-bold text-slate-900 mt-1.5 mb-3">
+                Recovery की शुरुआत सही Care से होती है
+            </h3>
+
+            <!-- 3 Pillar Process Flow -->
+            <div class="grid grid-cols-3 gap-2 my-4 text-center">
+                <div class="bg-cream p-2.5 rounded-xl border border-cream-border">
+                    <div class="w-8 h-8 bg-forest text-white rounded-full flex items-center justify-center mx-auto mb-1.5 shadow">
+                        <i data-lucide="heart-handshake" class="w-4 h-4"></i>
+                    </div>
+                    <p class="text-xs font-bold text-slate-900">Care</p>
+                    <p class="text-[10px] text-slate-500">उचित देखभाल</p>
+                </div>
+
+                <div class="bg-cream p-2.5 rounded-xl border border-cream-border">
+                    <div class="w-8 h-8 bg-forest text-white rounded-full flex items-center justify-center mx-auto mb-1.5 shadow">
+                        <i data-lucide="accessibility" class="w-4 h-4"></i>
+                    </div>
+                    <p class="text-xs font-bold text-slate-900">Physio</p>
+                    <p class="text-[10px] text-slate-500">फिजियोथेरेपी</p>
+                </div>
+
+                <div class="bg-cream p-2.5 rounded-xl border border-cream-border">
+                    <div class="w-8 h-8 bg-gold text-white rounded-full flex items-center justify-center mx-auto mb-1.5 shadow">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    </div>
+                    <p class="text-xs font-bold text-slate-900">Lifestyle</p>
+                    <p class="text-[10px] text-slate-500">आयुर्वेदिक सपोर्ट</p>
+                </div>
+            </div>
+
+            <p class="text-xs text-slate-600 leading-relaxed bg-sage-50 p-3 rounded-xl border border-sage-200">
+                लकवे के बाद Recovery हर व्यक्ति में अलग होती है। सही समय पर Treatment, नियमित Physiotherapy और रोज़ाना की सही दिनचर्या — इस सफ़र में हर छोटा कदम मायने रखता है।
+            </p>
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- 4. PRODUCT SHOWCASE SECTION                -->
+        <!-- ========================================== -->
+        <section class="bg-gradient-to-b from-sage-100 to-white px-4 py-6 border-b border-sage-200 text-center">
+            <span class="text-[10px] font-bold text-forest bg-white border border-sage-300 px-3 py-0.5 rounded-full uppercase tracking-wider">
+                Ayurvedic Herbal Formula
+            </span>
+
+            <h3 class="text-lg font-bold text-forest mt-2">Neuro Shakti Plus</h3>
+            <p class="text-xs font-semibold text-slate-600">Paralysis Revolution Powder (200g)</p>
+
+            <!-- Product Image Jar & Badges -->
+            <div class="my-4 relative bg-white p-4 rounded-2xl border border-sage-200 shadow-md max-w-[320px] mx-auto">
+                <div class="absolute top-2 left-2 bg-forest text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
+                    200 gram
+                </div>
+                <div class="absolute top-2 right-2 bg-amber-100 text-amber-900 text-[9px] font-bold px-2 py-0.5 rounded-full border border-amber-300 flex items-center gap-0.5">
+                    <i data-lucide="check" class="w-3 h-3 text-emerald-600"></i> 100% Natural
+                </div>
+
+                <div class="bg-sage-50 rounded-xl p-3 my-2 flex items-center justify-center min-h-[180px]">
+                    <!-- Render Product Jar -->
+                    <div class="text-center space-y-2">
+                        <div class="w-28 h-36 bg-gradient-to-b from-slate-100 to-white border-2 border-forest rounded-xl mx-auto shadow-md relative flex flex-col justify-between p-2">
+                            <div class="bg-forest text-white text-[8px] font-bold py-1 rounded">ARADABIOSIS</div>
+                            <div class="my-1">
+                                <p class="text-xs font-black text-forest leading-none">NEURO</p>
+                                <p class="text-xs font-black text-forest leading-none">Shakti Plus</p>
+                                <p class="text-[7px] text-slate-500 font-medium">Paralysis Care</p>
+                            </div>
+                            <div class="bg-amber-500 text-slate-950 font-bold text-[7px] py-0.5 rounded">
+                                200g Powder
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-xs text-slate-700 font-medium pt-1">
+                    <span class="text-forest font-bold">Traditional Herbs</span> → <span>Wellness Support</span>
+                </div>
+            </div>
+
+            <p class="text-xs text-slate-600 mb-4 px-2">
+                एक आयुर्वेदिक वेलनेस सपोर्ट जो नसों की ताकत, मांसपेशियों के संतुलन और दिनचर्या को आसान बनाने में मदद करता है।
+            </p>
+
+            <a href="#order-form" class="inline-flex items-center justify-center gap-2 bg-forest hover:bg-forest-dark text-white font-bold text-xs py-2.5 px-6 rounded-full shadow-md transition-all">
+                <span>जानकारी के लिए Request भेजें</span>
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </a>
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- 5. TRUST & QUALITY SECTION                 -->
+        <!-- ========================================== -->
+        <section class="bg-white px-4 py-6 border-b border-sage-200">
+            <div class="text-center mb-4">
+                <span class="text-[10px] font-bold text-forest bg-sage-100 px-3 py-0.5 rounded-full uppercase tracking-wider">Trust & Quality</span>
+                <h3 class="text-base font-bold text-slate-900 mt-1.5">
+                    भरोसे के साथ सही Care
+                </h3>
+                <p class="text-xs text-slate-600">Quality & Service पर हमारा ध्यान</p>
+            </div>
+
+            <!-- 6 Numbered Badge Cards Grid -->
+            <div class="grid grid-cols-2 gap-2.5">
+                <!-- 01 -->
+                <div class="bg-cream p-3 rounded-xl border border-cream-border flex items-start gap-2.5">
+                    <span class="text-xs font-black text-forest bg-sage-200 px-1.5 py-0.5 rounded">01</span>
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-900">Ayurvedic Guidelines</h4>
+                        <p class="text-[10px] text-slate-600 leading-tight">गाइडलाइन्स के अनुसार तैयार</p>
+                    </div>
+                </div>
+
+                <!-- 02 -->
+                <div class="bg-cream p-3 rounded-xl border border-cream-border flex items-start gap-2.5">
+                    <span class="text-xs font-black text-forest bg-sage-200 px-1.5 py-0.5 rounded">02</span>
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-900">GMP Standard</h4>
+                        <p class="text-[10px] text-slate-600 leading-tight">उच्च गुणवत्ता मैन्युफैक्चरिंग</p>
+                    </div>
+                </div>
+
+                <!-- 03 -->
+                <div class="bg-cream p-3 rounded-xl border border-cream-border flex items-start gap-2.5">
+                    <span class="text-xs font-black text-forest bg-sage-200 px-1.5 py-0.5 rounded">03</span>
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-900">Premium Herbs</h4>
+                        <p class="text-[10px] text-slate-600 leading-tight">शुद्ध प्राकृतिक जड़ी-बूटियाँ</p>
+                    </div>
+                </div>
+
+                <!-- 04 -->
+                <div class="bg-cream p-3 rounded-xl border border-cream-border flex items-start gap-2.5">
+                    <span class="text-xs font-black text-forest bg-sage-200 px-1.5 py-0.5 rounded">04</span>
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-900">Hygienically Packed</h4>
+                        <p class="text-[10px] text-slate-600 leading-tight">सुरक्षित और स्वच्छ पैकिंग</p>
+                    </div>
+                </div>
+
+                <!-- 05 -->
+                <div class="bg-cream p-3 rounded-xl border border-cream-border flex items-start gap-2.5">
+                    <span class="text-xs font-black text-forest bg-sage-200 px-1.5 py-0.5 rounded">05</span>
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-900">Cash On Delivery</h4>
+                        <p class="text-[10px] text-slate-600 leading-tight">डिलीवरी पर ही भुगतान करें</p>
+                    </div>
+                </div>
+
+                <!-- 06 -->
+                <div class="bg-cream p-3 rounded-xl border border-cream-border flex items-start gap-2.5">
+                    <span class="text-xs font-black text-forest bg-sage-200 px-1.5 py-0.5 rounded">06</span>
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-900">Customer Support</h4>
+                        <p class="text-[10px] text-slate-600 leading-tight">पूरी जानकारी व सहायता उपलब्ध</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- 6. CUSTOMER REVIEWS (TESTIMONIALS)         -->
+        <!-- ========================================== -->
+        <section class="bg-sage-50 px-4 py-6 border-b border-sage-200">
+            <div class="text-center mb-4">
+                <span class="text-[10px] font-bold text-forest bg-sage-200 px-3 py-0.5 rounded-full uppercase tracking-wider">Reviews</span>
+                <h3 class="text-base font-bold text-slate-900 mt-1">Customers Reviews</h3>
+            </div>
+
+            <div class="space-y-3">
+                <!-- Review 1 -->
+                <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2">
+                    <div class="flex items-center justify-between">
+                        <div class="flex text-amber-500 gap-0.5">
+                            ★★★★★
+                        </div>
+                        <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">Verified Customer</span>
+                    </div>
+                    <p class="text-xs text-slate-700 leading-relaxed italic">
+                        “ लकवे के बाद मेरे दाहिने हाथ में काफी कमजोरी थी और daily के काम करना मुश्किल हो गया था। डॉक्टर की सलाह के साथ मैंने Neuro Shakti Plus को अपनी रूटीन में शामिल किया। समय के साथ मुझे पहले से बेहतर महसूस होने लगा और हाथ की मूवमेंट में सुधार का अनुभव हुआ। मैं अपनी रिकवरी से खुश हूँ। ”
+                    </p>
+                    <div class="flex items-center justify-between text-xs pt-1 border-t border-slate-100">
+                        <span class="font-bold text-slate-900">रमेश चौधरी</span>
+                        <span class="text-slate-500 font-medium">जयपुर</span>
+                    </div>
+                </div>
+
+                <!-- Review 2 -->
+                <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2">
+                    <div class="flex items-center justify-between">
+                        <div class="flex text-amber-500 gap-0.5">
+                            ★★★★★
+                        </div>
+                        <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">Verified Customer</span>
+                    </div>
+                    <p class="text-xs text-slate-700 leading-relaxed italic">
+                        “ मेरे पति को लकवा आने के बाद उनका बायाँ हाथ ठीक से काम नहीं कर रहा था। छोटी-छोटी चीज़ें पकड़ना और बिना सहारे चलना भी आसान नहीं था। हमने Neuro Shakti Plus को उनकी Daily Care Routine में शामिल किया। समय के साथ उनकी Overall Recovery Journey में अच्छे बदलाव देखने को मिले और उनका आत्मविश्वास भी पहले से बेहतर हुआ। ”
+                    </p>
+                    <div class="flex items-center justify-between text-xs pt-1 border-t border-slate-100">
+                        <span class="font-bold text-slate-900">सुनीता शर्मा</span>
+                        <span class="text-slate-500 font-medium">भोपाल</span>
+                    </div>
+                </div>
+
+                <!-- Review 3 -->
+                <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2">
+                    <div class="flex items-center justify-between">
+                        <div class="flex text-amber-500 gap-0.5">
+                            ★★★★★
+                        </div>
+                        <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">Verified Customer</span>
+                    </div>
+                    <p class="text-xs text-slate-700 leading-relaxed italic">
+                        “ लकवे के बाद शरीर में जकड़न और हाथ-पैरों की कमजोरी की वजह से मैं काफी परेशान था। जब से Neuro Shakti Plus लेना शुरू किया उसके बाद मुझे पहले से बेहतर महसूस होने लगा। अब मैं पहले की तुलना में अपने कई Daily Tasks ज़्यादा आसानी से कर पाता हूँ और Recovery की दिशा में लगातार आगे बढ़ रहा हूँ। ”
+                    </p>
+                    <div class="flex items-center justify-between text-xs pt-1 border-t border-slate-100">
+                        <span class="font-bold text-slate-900">महेश वर्मा</span>
+                        <span class="text-slate-500 font-medium">लखनऊ</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- 7. ORDER & LEAD CAPTURE FORM SECTION      -->
+        <!-- ========================================== -->
+        <section id="order-form" class="bg-forest text-white px-4 py-6">
+
+            <!-- MAIN ORDER FORM CONTENT VIEW -->
+            <div id="formContainer" class="bg-white text-slate-900 p-4.5 rounded-2xl shadow-2xl border border-sage-300">
+                <div class="text-center mb-4">
+                    <span class="bg-amber-100 text-amber-900 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-amber-300">
+                        🛒 Fast Dispatch Order Request
+                    </span>
+                    <h3 class="text-base font-bold text-forest mt-2">
+                        Recovery का हर छोटा कदम...<br>
+                        <span class="text-amber-600">एक नई उम्मीद लेकर आता है।</span>
+                    </h3>
+                    <p class="text-xs text-slate-600 mt-1">
+                        नीचे अपनी जानकारी भरें — हमारी Team आपसे संपर्क करेगी और आगे की जानकारी देगी।
+                    </p>
+                </div>
+
+                <form id="leadCaptureForm" onsubmit="handleFormSubmit(event)" class="space-y-3">
+                    
+                    <!-- Full Name -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-800 mb-1">पूरा नाम (Full Name) *</label>
+                        <input type="text" id="fullName" required placeholder="अपना पूरा नाम लिखें" 
+                               class="w-full bg-slate-50 border border-slate-300 focus:border-forest focus:ring-1 focus:ring-forest rounded-lg px-3 py-2 text-xs outline-none">
+                    </div>
+
+                    <!-- Mobile Number -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-800 mb-1">मोबाइल नंबर (Mobile Number) *</label>
+                        <div class="flex">
+                            <span class="inline-flex items-center px-2.5 bg-slate-100 border border-r-0 border-slate-300 rounded-l-lg text-xs font-bold text-slate-600">+91</span>
+                            <input type="tel" id="mobileNumber" pattern="[0-9]{10}" maxlength="10" required placeholder="10 अंकों का मोबाइल नंबर" 
+                                   class="w-full bg-slate-50 border border-slate-300 focus:border-forest focus:ring-1 focus:ring-forest rounded-r-lg px-3 py-2 text-xs outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Delivery Address -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-800 mb-1">पूरा पता (Delivery Address)</label>
+                        <textarea id="deliveryAddress" rows="2" placeholder="मकान नं., गली/मोहल्ला, लैंडमार्क" 
+                                  class="w-full bg-slate-50 border border-slate-300 focus:border-forest focus:ring-1 focus:ring-forest rounded-lg px-3 py-2 text-xs outline-none resize-none"></textarea>
+                    </div>
+
+                    <!-- City & State Row -->
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-800 mb-1">शहर (City)</label>
+                            <input type="text" id="cityName" placeholder="उदा. जयपुर" 
+                                   class="w-full bg-slate-50 border border-slate-300 focus:border-forest focus:ring-1 focus:ring-forest rounded-lg px-3 py-2 text-xs outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-800 mb-1">पिनकोड (Pincode)</label>
+                            <input type="text" id="pincode" maxlength="6" placeholder="उदा. 302001" 
+                                   class="w-full bg-slate-50 border border-slate-300 focus:border-forest focus:ring-1 focus:ring-forest rounded-lg px-3 py-2 text-xs outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" id="submitBtn" class="pulse-gold w-full bg-gradient-to-r from-gold to-amber-600 hover:from-gold-dark hover:to-amber-700 text-white font-bold text-sm py-3 px-4 rounded-xl shadow-lg transition-all border border-amber-300/40 mt-2 flex items-center justify-center gap-2">
+                        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                        <span>Order Request भेजें</span>
+                    </button>
+                </form>
+
+                <!-- Form Trust Badges -->
+                <div class="mt-4 pt-3 border-t border-slate-100 text-center space-y-1 text-[11px] text-slate-600 font-semibold">
+                    <p class="text-forest font-bold">✓ हज़ारों परिवारों का भरोसा</p>
+                    <p class="text-[10px] text-slate-500">Free Delivery • Cash On Delivery (COD) • Free Diet Chart</p>
+                </div>
+            </div>
+
+
+            <!-- INLINE THANK YOU SCREEN (Hidden initially until submitted) -->
+            <div id="thankYouContainer" class="hidden bg-white text-slate-900 p-6 rounded-2xl shadow-2xl text-center space-y-4 border border-sage-300">
+                <div class="w-16 h-16 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center mx-auto shadow-inner">
+                    <i data-lucide="check-circle-2" class="w-10 h-10 text-emerald-600"></i>
+                </div>
+
+                <div class="space-y-1">
+                    <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                        Request Confirmed ✅
+                    </span>
+                    <h3 class="text-lg font-bold text-slate-900">धन्यवाद! आपका ऑर्डर प्राप्त हो गया है</h3>
+                    <p class="text-xs text-slate-600">
+                        हमारी एक्सपर्ट टीम जल्द ही आपसे दिए गए नंबर पर संपर्क करेगी और आपकी पूरी सहायता करेगी।
+                    </p>
+                </div>
+
+                <!-- Order Summary Box -->
+                <div class="bg-sage-50 p-3 rounded-xl border border-sage-200 text-left text-xs space-y-1">
+                    <p class="font-bold text-forest border-b border-sage-200 pb-1 mb-1">ऑर्डर विवरण (Summary):</p>
+                    <p><strong>नाम:</strong> <span id="summaryName">-</span></p>
+                    <p><strong>मोबाइल:</strong> <span id="summaryPhone">-</span></p>
+                    <p><strong>उत्पाद:</strong> Neuro Shakti Plus (200g Powder)</p>
+                    <p><strong>पेमेंट:</strong> Cash On Delivery (COD)</p>
+                </div>
+
+                <button onclick="resetOrderForm()" class="bg-forest text-white font-bold text-xs py-2.5 px-6 rounded-xl hover:bg-forest-dark transition w-full">
+                    नया ऑर्डर / फॉर्म फिर से भरें
+                </button>
+            </div>
+
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- 8. FOOTER & LEGAL DISCLAIMERS              -->
+        <!-- ========================================== -->
+        <footer class="bg-slate-950 text-slate-400 p-4 text-[10px] leading-relaxed space-y-3">
+            
+            <!-- Medical Disclaimer Box -->
+            <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-1 text-slate-300">
+                <p class="font-bold text-slate-200 text-xs">Disclaimer:</p>
+                <p>
+                    यह एक आयुर्वेदिक वेलनेस उत्पाद है। यह किसी भी रोग के इलाज, निदान या रोकथाम का दावा नहीं करता। यह किसी योग्य चिकित्सक की सलाह, निदान या इलाज का विकल्प नहीं है। किसी भी स्वास्थ्य समस्या के लिए कृपया अपने डॉक्टर से सलाह लें। परिणाम हर व्यक्ति के अनुसार अलग-अलग हो सकते हैं।
+                </p>
+            </div>
+
+            <!-- Facebook/Meta Disclaimer -->
+            <p class="text-center text-slate-500">
+                This site is not a part of the Facebook / Meta website or Meta Platforms Inc.
+            </p>
+
+            <!-- Copyright Line -->
+            <p class="text-center font-bold text-slate-500 border-t border-slate-900 pt-2">
+                © 2026 Neuro Shakti Plus. All rights reserved.
+            </p>
+        </footer>
+
+        <!-- Sticky Floating Bottom CTA for Quick Tapping -->
+        <div class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 p-2 z-50 max-w-[480px] mx-auto shadow-2xl flex items-center justify-between gap-2">
+            <div class="pl-2">
+                <p class="text-[9px] text-slate-500 font-bold uppercase leading-none">Neuro Shakti Plus</p>
+                <p class="text-xs font-black text-forest">COD • Free Delivery</p>
+            </div>
+            <a href="#order-form" class="bg-gradient-to-r from-gold to-amber-600 text-white font-bold text-xs py-2.5 px-5 rounded-xl shadow flex items-center gap-1">
+                <span>अभी ऑर्डर करें</span>
+                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </a>
+        </div>
+
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Default Google Apps Script Web App URL Key in LocalStorage
+        let googleSheetUrl = localStorage.getItem('neuro_shakti_sheet_url') || '';
+
+        window.onload = function() {
+            if (googleSheetUrl) {
+                document.getElementById('sheetUrlInput').value = googleSheetUrl;
+            }
+        };
+
+        function saveSheetUrl() {
+            const inputVal = document.getElementById('sheetUrlInput').value.trim();
+            googleSheetUrl = inputVal;
+            localStorage.setItem('neuro_shakti_sheet_url', inputVal);
+            const status = document.getElementById('saveStatus');
+            status.innerText = "✓ Saved Successfully!";
+            setTimeout(() => status.innerText = "", 3000);
+        }
+
+        // Toggle Selected State on Problem Cards
+        function toggleProblemCard(cardEl) {
+            cardEl.classList.toggle('selected');
+        }
+
+        // Form Submit Handler (Sends Data to Google Sheets & Displays Thank You Screen)
+        function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('fullName').value.trim();
+            const phone = document.getElementById('mobileNumber').value.trim();
+            const address = document.getElementById('deliveryAddress').value.trim();
+            const city = document.getElementById('cityName').value.trim();
+            const pincode = document.getElementById('pincode').value.trim();
+
+            // Collect Selected Problems
+            const selectedProblems = [];
+            document.querySelectorAll('.problem-card.selected').forEach((card) => {
+                selectedProblems.push(card.querySelector('p').innerText);
+            });
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span>प्रोसेसिंग हो रही है...</span>';
+
+            const payload = {
+                timestamp: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
+                fullName: name,
+                mobileNumber: phone,
+                address: address,
+                city: city,
+                pincode: pincode,
+                selectedProblems: selectedProblems.join(' | ') || 'None Selected'
+            };
+
+            // Post Data to Google Sheet Script if URL provided
+            if (googleSheetUrl) {
+                fetch(googleSheetUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                }).then(() => {
+                    showThankYouScreen(name, phone);
+                }).catch((err) => {
+                    console.error('Error sending to sheet:', err);
+                    showThankYouScreen(name, phone);
+                });
+            } else {
+                // If no Web App URL set, display thank you screen directly
+                setTimeout(() => {
+                    showThankYouScreen(name, phone);
+                }, 600);
+            }
+        }
+
+        function showThankYouScreen(name, phone) {
+            document.getElementById('summaryName').innerText = name;
+            document.getElementById('summaryPhone').innerText = phone;
+            document.getElementById('formContainer').classList.add('hidden');
+            document.getElementById('thankYouContainer').classList.remove('hidden');
+
+            // Scroll smoothly to thank you view
+            document.getElementById('order-form').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function resetOrderForm() {
+            document.getElementById('leadCaptureForm').reset();
+            document.getElementById('submitBtn').disabled = false;
+            document.getElementById('submitBtn').innerHTML = '<i data-lucide="shopping-cart" class="w-4 h-4"></i><span>Order Request भेजें</span>';
+            document.getElementById('thankYouContainer').classList.add('hidden');
+            document.getElementById('formContainer').classList.remove('hidden');
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>
