@@ -24,7 +24,7 @@ This branch adds a Google Apps Script order receiver and removes the public Goog
    - `SPREADSHEET_ID` = your Google Sheet ID
    - `TURNSTILE_SECRET` = Cloudflare Turnstile secret key
    - `ALLOWED_HOSTNAME` = exact public website hostname, for example `adyguru4455-max.github.io` (no `https://` or path). If you serve multiple approved hostnames, separate them with commas.
-4. Save the project. Select `doGet` in the function picker and run it once if Google asks you to authorize the project. Approve the requested Google permissions.
+4. Save the project. After setting the properties, select `setup` in the function picker and run it once. Approve the requested Google permissions; this creates the `Orders` tab and its headers.
 5. Click **Deploy → New deployment → Web app**.
    - **Execute as:** Me (the Sheet owner)
    - **Who has access:** Anyone (the public order page must be able to submit orders)
